@@ -16,5 +16,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".module.service.StepService"
+            android:priority="1000"
+            android:process="cn.jianke.jkstepsensor.step">
+        </service>
     </application>
 </manifest>
