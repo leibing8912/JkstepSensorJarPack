@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.support.v7.app.NotificationCompat;
 import cn.jianke.customcache.utils.StringUtil;
 import cn.jianke.jkstepsensor.R;
+import cn.jianke.jkstepsensor.module.service.StepService;
 
 public class NotificationUtils {
     private static NotificationUtils intance;
@@ -18,7 +19,6 @@ public class NotificationUtils {
         builder = new NotificationCompat.Builder(context);
         nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
-
     public static NotificationUtils getInstance(Context context){
         if (intance == null){
             intance = new NotificationUtils(context);
@@ -30,24 +30,30 @@ public class NotificationUtils {
                                     String content, String ticker ,String contentTitle,
                                    Context context, Class pendingClass,
                                    boolean isOngoing, int notifyId,
-                                   int icon,int priority){
+                                   int icon){
         if (builder == null || nm == null)
             return;
-        builder.setPriority(priority);
+        builder.setPriority(Notification.PRIORITY_MIN);
         if (content != null && pendingClass != null) {
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                     new Intent(context, pendingClass), 0);
             builder.setContentIntent(contentIntent);
         }
-        if (StringUtil.isNotEmpty(ticker))
+        if (StringUtil.isEmpty(ticker))
+            ticker = "jianke step";
             builder.setTicker(ticker);
+        if (icon == StepService.INT_ERROR)
+            icon = R.mipmap.ic_launcher;
         builder.setSmallIcon(icon);
-        if (StringUtil.isNotEmpty(contentTitle))
-            builder.setContentTitle(contentTitle);
+        if (StringUtil.isEmpty(contentTitle))
+            contentTitle = "jianke step";
+        builder.setContentTitle(contentTitle);
         builder.setOngoing(isOngoing);
         if (StringUtil.isNotEmpty(content))
             builder.setContentText(content);
         Notification notification = builder.build();
+        if (notifyId == StepService.INT_ERROR)
+            notifyId = R.string.app_name;
         nm.notify(notifyId, notification);
     }
 
@@ -56,28 +62,28 @@ public class NotificationUtils {
             Context context, Class pendingClass){
         updateNotification(content, ticker, contentTitle,
                 context, pendingClass,true,
-                R.string.app_name, R.mipmap.ic_launcher,Notification.PRIORITY_MIN);
+                R.string.app_name, R.mipmap.ic_launcher);
     }
 
     public void updateNotification(
             String content, String ticker ,String contentTitle){
             updateNotification(content,ticker,contentTitle,
                     null,null,true,
-                    R.string.app_name, R.mipmap.ic_launcher,Notification.PRIORITY_MIN);
+                    R.string.app_name, R.mipmap.ic_launcher);
     }
 
     public void updateNotification(
             String content, String ticker ,String contentTitle,int icon){
         updateNotification(content,ticker,contentTitle,
                 null,null,true,
-                R.string.app_name,icon,Notification.PRIORITY_MIN);
+                R.string.app_name,icon);
     }
 
     public void updateNotification(
             String content){
         updateNotification(content,null,null,
                 null,null,true,
-                R.string.app_name, R.mipmap.icon,Notification.PRIORITY_MIN);
+                R.string.app_name, R.mipmap.icon);
     }
 
     public void clearAllNotification(){

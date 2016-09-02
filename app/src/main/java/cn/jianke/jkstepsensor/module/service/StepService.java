@@ -18,15 +18,18 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import java.util.Date;
+import cn.jianke.customcache.utils.StringUtil;
 import cn.jianke.jkstepsensor.common.Constant;
 import cn.jianke.jkstepsensor.common.data.DataCache;
 import cn.jianke.jkstepsensor.common.data.bean.StepModel;
 import cn.jianke.jkstepsensor.common.utils.DateUtils;
+import cn.jianke.jkstepsensor.common.utils.NotificationUtils;
 import cn.jianke.jkstepsensor.module.core.StepDcretor;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class StepService extends Service implements SensorEventListener {
     public static final String ACTION_STOP_SERVICE = "action_stop_service";
+    public static final int INT_ERROR = -12;
     public final static String STEP_KEY = "step_key";
     private SensorManager sensorManager;
     private StepDcretor stepDetector;
@@ -34,6 +37,7 @@ public class StepService extends Service implements SensorEventListener {
     private Messenger messenger = new Messenger(msgHandler);
     private StepModel mStepModel;
     private BroadcastReceiver stepServiceReceiver;
+    private boolean isNeedStopService = false;
 
     class MsgHandler extends Handler {
         @Override
@@ -42,6 +46,7 @@ public class StepService extends Service implements SensorEventListener {
                 case Constant.MSG_FROM_CLIENT:
                     try {
                         cacheStepData(StepService.this,StepDcretor.CURRENT_STEP + "");
+                        updateNotification(msg.getData());
                         Messenger messenger = msg.replyTo;
                         Message replyMsg = Message.obtain(null, Constant.MSG_FROM_SERVER);
                         Bundle bundle = new Bundle();
@@ -73,11 +78,60 @@ public class StepService extends Service implements SensorEventListener {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 if (ACTION_STOP_SERVICE.equals(action)){
+                    isNeedStopService = true;
                     StepService.this.stopSelf();
                 }
             }
         };
         registerReceiver(stepServiceReceiver, filter);
+    }
+
+    /**
+     * 更新通知栏
+     * @author leibing
+     * @createTime 2016/09/02
+     * @lastModify 2016/09/02
+     * @param bundle 数据
+     * @return
+     */
+    private void updateNotification(Bundle bundle) {
+        if (bundle == null) {
+            NotificationUtils.getInstance(StepService.this).
+                    updateNotification("today walk" + StepDcretor.CURRENT_STEP + "step");
+        }else {
+            String content = (String) bundle.getSerializable(Constant.CONTENT_KEY);
+            String ticker = (String) bundle.getSerializable(Constant.TICKER_KEY);
+            String contentTile = (String) bundle.getSerializable(Constant.CONTENTTITLE_KEY);
+            Class pendingClass = (Class) bundle.getSerializable(Constant.PENDINGCLASS_KEY);
+            boolean isOngoing = true;
+            if (bundle.getSerializable(Constant.ISONGOING_KEY) != null){
+                isOngoing = (boolean) bundle.getSerializable(Constant.ISONGOING_KEY);
+            }
+            int icon = INT_ERROR;
+            if (bundle.getSerializable(Constant.ICON_KEY) != null){
+                icon = (int) bundle.getSerializable(Constant.ICON_KEY);
+            }
+            int notifyId = INT_ERROR;
+            if (bundle.getSerializable(Constant.NOTIFYID_KEY) != null){
+                notifyId = (int) bundle.getSerializable(Constant.NOTIFYID_KEY);
+            }
+            if (StringUtil.isEmpty(content)
+                    || StringUtil.isEmpty(ticker)
+                    || StringUtil.isEmpty(contentTile)){
+                NotificationUtils.getInstance(StepService.this).
+                        updateNotification("today walk" + StepDcretor.CURRENT_STEP + "step");
+            }else {
+                NotificationUtils.getInstance(StepService.this).
+                        updateNotification(content + StepDcretor.CURRENT_STEP + "step",
+                                ticker,
+                                contentTile,
+                                StepService.this,
+                                pendingClass,
+                                isOngoing,
+                                notifyId,
+                                icon);
+            }
+        }
     }
 
     private void startStep() {
@@ -174,6 +228,12 @@ public class StepService extends Service implements SensorEventListener {
         stopForeground(true);
         unregisterReceiver(stepServiceReceiver);
         stopStepDetector();
+        if (!isNeedStopService){
+            Intent intent = new Intent(this, StepService.class);
+            startService(intent);
+        }else {
+            isNeedStopService = false;
+        }
         super.onDestroy();
     }
 
