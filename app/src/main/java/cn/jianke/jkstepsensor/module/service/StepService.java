@@ -86,18 +86,10 @@ public class StepService extends Service implements SensorEventListener {
         registerReceiver(stepServiceReceiver, filter);
     }
 
-    /**
-     * 更新通知栏
-     * @author leibing
-     * @createTime 2016/09/02
-     * @lastModify 2016/09/02
-     * @param bundle 数据
-     * @return
-     */
     private void updateNotification(Bundle bundle) {
         if (bundle == null) {
             NotificationUtils.getInstance(StepService.this).
-                    updateNotification("today walk" + StepDcretor.CURRENT_STEP + "step");
+                    updateNotification("today walk " + StepDcretor.CURRENT_STEP + " step");
         }else {
             String content = (String) bundle.getSerializable(Constant.CONTENT_KEY);
             String ticker = (String) bundle.getSerializable(Constant.TICKER_KEY);
@@ -119,10 +111,10 @@ public class StepService extends Service implements SensorEventListener {
                     || StringUtil.isEmpty(ticker)
                     || StringUtil.isEmpty(contentTile)){
                 NotificationUtils.getInstance(StepService.this).
-                        updateNotification("today walk" + StepDcretor.CURRENT_STEP + "step");
+                        updateNotification("today walk " + StepDcretor.CURRENT_STEP + " step");
             }else {
                 NotificationUtils.getInstance(StepService.this).
-                        updateNotification(content + StepDcretor.CURRENT_STEP + "step",
+                        updateNotification(content +" " + StepDcretor.CURRENT_STEP + " step",
                                 ticker,
                                 contentTile,
                                 StepService.this,
