@@ -28,8 +28,8 @@ import cn.jianke.jkstepsensor.module.core.StepDcretor;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class StepService extends Service implements SensorEventListener {
-    public static final String ACTION_STOP_SERVICE = "action_stop_service";
     public static final int INT_ERROR = -12;
+    public static final String ACTION_STOP_SERVICE = "action_stop_service";
     public final static String STEP_KEY = "step_key";
     private SensorManager sensorManager;
     private StepDcretor stepDetector;
@@ -45,7 +45,7 @@ public class StepService extends Service implements SensorEventListener {
             switch (msg.what) {
                 case Constant.MSG_FROM_CLIENT:
                     try {
-                        cacheStepData(StepService.this,StepDcretor.CURRENT_STEP + "");
+                        cacheStepData(StepService.this, StepDcretor.CURRENT_STEP + "");
                         updateNotification(msg.getData());
                         Messenger messenger = msg.replyTo;
                         Message replyMsg = Message.obtain(null, Constant.MSG_FROM_SERVER);
@@ -61,29 +61,6 @@ public class StepService extends Service implements SensorEventListener {
                     super.handleMessage(msg);
             }
         }
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        initStepServiceReceiver();
-        startStep();
-    }
-
-    private void initStepServiceReceiver() {
-        final IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_STOP_SERVICE);
-        stepServiceReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (ACTION_STOP_SERVICE.equals(action)){
-                    isNeedStopService = true;
-                    StepService.this.stopSelf();
-                }
-            }
-        };
-        registerReceiver(stepServiceReceiver, filter);
     }
 
     private void updateNotification(Bundle bundle) {
@@ -114,7 +91,7 @@ public class StepService extends Service implements SensorEventListener {
                         updateNotification("today walk " + StepDcretor.CURRENT_STEP + " step");
             }else {
                 NotificationUtils.getInstance(StepService.this).
-                        updateNotification(content +" " + StepDcretor.CURRENT_STEP + " step",
+                        updateNotification(content + StepDcretor.CURRENT_STEP + " step",
                                 ticker,
                                 contentTile,
                                 StepService.this,
@@ -124,6 +101,29 @@ public class StepService extends Service implements SensorEventListener {
                                 icon);
             }
         }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        initStepServiceReceiver();
+        startStep();
+    }
+
+    private void initStepServiceReceiver() {
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_STOP_SERVICE);
+        stepServiceReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (ACTION_STOP_SERVICE.equals(action)){
+                    isNeedStopService = true;
+                    StepService.this.stopSelf();
+                }
+            }
+        };
+        registerReceiver(stepServiceReceiver, filter);
     }
 
     private void startStep() {
@@ -165,11 +165,7 @@ public class StepService extends Service implements SensorEventListener {
         sensorManager = (SensorManager) this
                 .getSystemService(SENSOR_SERVICE);
         addBasePedoListener();
-        try {
-            addCountStepListener();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        addCountStepListener();
     }
 
     public void stopStepDetector(){
@@ -180,7 +176,7 @@ public class StepService extends Service implements SensorEventListener {
         }
     }
 
-    private void addCountStepListener() throws Exception {
+    private void addCountStepListener() {
         Sensor detectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         Sensor countSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if (detectorSensor != null) {
@@ -188,7 +184,6 @@ public class StepService extends Service implements SensorEventListener {
         } else if (countSensor != null) {
             sensorManager.registerListener(StepService.this, countSensor, SensorManager.SENSOR_DELAY_UI);
         } else {
-            throw new Exception("Count sensor not available!");
         }
     }
 

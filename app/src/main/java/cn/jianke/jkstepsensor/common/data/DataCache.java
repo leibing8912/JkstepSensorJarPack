@@ -7,6 +7,7 @@ import cn.jianke.customcache.data.ListCache;
 import cn.jianke.customcache.data.SpLocalCache;
 import cn.jianke.jkstepsensor.common.data.bean.StepModel;
 import cn.jianke.jkstepsensor.common.utils.DateUtils;
+
 public class DataCache {
     private static DataCache instance;
     private SpLocalCache<ListCache> mSpLocalCache;

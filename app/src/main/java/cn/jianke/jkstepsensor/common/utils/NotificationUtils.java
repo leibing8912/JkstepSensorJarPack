@@ -19,6 +19,7 @@ public class NotificationUtils {
         builder = new NotificationCompat.Builder(context);
         nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
+
     public static NotificationUtils getInstance(Context context){
         if (intance == null){
             intance = new NotificationUtils(context);
@@ -40,13 +41,13 @@ public class NotificationUtils {
             builder.setContentIntent(contentIntent);
         }
         if (StringUtil.isEmpty(ticker))
-            ticker = "jianke step";
+            ticker = "健客计步";
             builder.setTicker(ticker);
         if (icon == StepService.INT_ERROR)
             icon = R.mipmap.ic_launcher;
         builder.setSmallIcon(icon);
         if (StringUtil.isEmpty(contentTitle))
-            contentTitle = "jianke step";
+            contentTitle = "健客计步";
         builder.setContentTitle(contentTitle);
         builder.setOngoing(isOngoing);
         if (StringUtil.isNotEmpty(content))
