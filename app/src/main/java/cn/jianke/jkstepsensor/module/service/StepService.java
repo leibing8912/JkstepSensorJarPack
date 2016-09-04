@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import java.util.ArrayList;
 import java.util.Date;
 import cn.jianke.customcache.utils.StringUtil;
 import cn.jianke.jkstepsensor.common.Constant;
@@ -159,6 +160,11 @@ public class StepService extends Service implements SensorEventListener {
                 if (stepModel != null){
                    StepDcretor.CURRENT_STEP = Integer.parseInt(stepModel.getStep());
                 }
+            }
+
+            @Override
+            public void readAllCache(ArrayList<StepModel> mData) {
+
             }
         });
 

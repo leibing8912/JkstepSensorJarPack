@@ -72,7 +72,7 @@ public class DataCache {
     public void getTodayCache(Context context,DataCacheListener mDataCacheListener){
         getCacheByDate(context, new Date(), mDataCacheListener);
     }
-    
+
     public void getCacheByDate(Context context, Date date, final DataCacheListener mDataCacheListener){
         final String dateStr = DateUtils.simpleDateFormat(date);
         if (mSpLocalCache != null){
@@ -103,6 +103,25 @@ public class DataCache {
                                 model.setDate(dateStr);
                                 model.setStep(0 + "");
                                 mDataCacheListener.readListCache(model);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void getAllCache(Context context,final DataCacheListener mDataCacheListener){
+        if (mSpLocalCache != null){
+            mSpLocalCache.read(context, new SpLocalCache.LocalCacheCallBack() {
+                @Override
+                public void readCacheComplete(Object obj) {
+                    if (obj != null){
+                        mListCache = (ListCache<StepModel>) obj;
+                        if (mListCache != null && mDataCacheListener != null){
+                            mCacheList = mListCache.getObjList();
+                            if (mCacheList != null && mCacheList.size() != 0) {
+                                mDataCacheListener.readAllCache(mCacheList);
                             }
                         }
                     }
@@ -146,5 +165,6 @@ public class DataCache {
 
     public interface DataCacheListener{
         void readListCache(StepModel stepModel);
+        void readAllCache(ArrayList<StepModel> mData);
     }
 }
