@@ -27,7 +27,7 @@ public class DataCache {
         return instance;
     }
 
-    public void addStepCache(Context context, final StepModel mStepModel){
+    public void addStepCache(final Context context, final StepModel mStepModel){
         if (mSpLocalCache != null){
             mSpLocalCache.read(context, new SpLocalCache.LocalCacheCallBack() {
                 @Override
@@ -36,35 +36,43 @@ public class DataCache {
                         mListCache = (ListCache<StepModel>) obj;
                         if (mListCache != null) {
                             mCacheList = mListCache.getObjList();
-                            if (mCacheList == null || mCacheList.size() == 0){
+                            if (mCacheList != null ){
+                                if (mCacheList.size() != 0){
+                                    for (StepModel stepModel : mCacheList) {
+                                        if (mStepModel.getDate().equals(stepModel.getDate())) {
+                                            int cha = Integer.parseInt(mStepModel.getStep())
+                                                    - Integer.parseInt(stepModel.getStep());
+                                            if (cha >= 0) {
+                                                mCacheList.remove(stepModel);
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                                mCacheList.add(mStepModel);
+                            }else {
+                                mCacheList = new ArrayList<>();
                                 mCacheList.add(mStepModel);
                             }
-                            for (StepModel stepModel : mCacheList) {
-                                if (mStepModel.getDate().equals(stepModel.getDate()) ) {
-                                    int cha = Integer.parseInt(mStepModel.getStep())
-                                            - Integer.parseInt(stepModel.getStep());
-                                    if (cha >= 0) {
-                                        mCacheList.remove(stepModel);
-                                        mCacheList.add(mStepModel);
-                                    }
-                                    break;
-                                }
-                            }
+                        }else {
+                            mCacheList = new ArrayList<>();
+                            mCacheList.add(mStepModel);
                         }
                     }else {
+                        mCacheList = new ArrayList<>();
                         mCacheList.add(mStepModel);
                     }
+                    mListCache.setObjList(mCacheList);
+                    mSpLocalCache.save(context, mListCache);
                 }
             });
-            mListCache.setObjList(mCacheList);
-            mSpLocalCache.save(context, mListCache);
         }
     }
 
     public void getTodayCache(Context context,DataCacheListener mDataCacheListener){
         getCacheByDate(context, new Date(), mDataCacheListener);
     }
-
+    
     public void getCacheByDate(Context context, Date date, final DataCacheListener mDataCacheListener){
         final String dateStr = DateUtils.simpleDateFormat(date);
         if (mSpLocalCache != null){
@@ -75,18 +83,29 @@ public class DataCache {
                         mListCache = (ListCache<StepModel>) obj;
                         if (mListCache != null && mDataCacheListener != null){
                             mCacheList = mListCache.getObjList();
-                            for (StepModel stepModel : mCacheList) {
-                                if (dateStr.equals(stepModel.getDate())) {
-                                    mDataCacheListener.readListCache(stepModel);
-                                    return;
+                            if (mCacheList != null && mCacheList.size() != 0) {
+                                int count = 0;
+                                for (StepModel stepModel : mCacheList) {
+                                    if (dateStr.equals(stepModel.getDate())) {
+                                        mDataCacheListener.readListCache(stepModel);
+                                        break;
+                                    }
+                                    count++;
                                 }
+                                if (count >= mCacheList.size()) {
+                                    StepModel model = new StepModel();
+                                    model.setDate(dateStr);
+                                    model.setStep(0 + "");
+                                    mDataCacheListener.readListCache(model);
+                                }
+                            }else {
+                                StepModel model = new StepModel();
+                                model.setDate(dateStr);
+                                model.setStep(0 + "");
+                                mDataCacheListener.readListCache(model);
                             }
                         }
                     }
-                    StepModel model = new StepModel();
-                    model.setDate(dateStr);
-                    model.setStep(0 + "");
-                    mDataCacheListener.readListCache(model);
                 }
             });
         }
