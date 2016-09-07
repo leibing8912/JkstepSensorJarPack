@@ -1,6 +1,7 @@
 package cn.jianke.jkstepsensor.module.service;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,9 +18,12 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v7.app.NotificationCompat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import cn.jianke.customcache.utils.StringUtil;
+import cn.jianke.jkstepsensor.R;
 import cn.jianke.jkstepsensor.common.Constant;
 import cn.jianke.jkstepsensor.common.data.DataCache;
 import cn.jianke.jkstepsensor.common.data.bean.StepModel;
@@ -104,11 +108,21 @@ public class StepService extends Service implements SensorEventListener {
         }
     }
 
+    public void startForeground(){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setContentTitle("foreground service");
+        builder.setContentText("try to avoid this service be killed!");
+        Notification notification = builder.build();
+        startForeground(0, notification);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
         initStepServiceReceiver();
         startStep();
+        startForeground();
     }
 
     private void initStepServiceReceiver() {
